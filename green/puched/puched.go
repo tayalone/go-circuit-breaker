@@ -1,7 +1,6 @@
 package puched
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -34,8 +33,8 @@ func New() *Handler {
 	p := Handler{
 		EmoState:    StateMidful,
 		Counter:     0,
-		MidfulLimit: 20,
-		AnnoyLimit:  10,
+		MidfulLimit: 200,
+		AnnoyLimit:  100,
 		expiry:      zero,
 	}
 	return &p
@@ -67,7 +66,7 @@ func (p *Handler) Hit() (int, State) {
 			if p.Counter >= p.AnnoyLimit {
 				p.Counter = 0
 				p.EmoState = StateRage
-				p.expiry = now.Add(30 * time.Second)
+				p.expiry = now.Add(5 * time.Second)
 			}
 		}
 	case StateRage:
@@ -78,11 +77,10 @@ func (p *Handler) Hit() (int, State) {
 				p.expiry = zero
 			} else {
 				p.Counter = 0
-				p.expiry = now.Add(30 * time.Second)
+				p.expiry = now.Add(10 * time.Second)
 			}
 		}
 	}
 
-	fmt.Println("counter", p.Counter, "state", p.EmoState)
 	return p.Counter, p.EmoState
 }
