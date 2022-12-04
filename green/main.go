@@ -58,7 +58,7 @@ func main() {
 	})
 
 	e.GET("/puched", func(c echo.Context) error {
-		counter, state := ph.Hit()
+		counter, state := ph.Hit(c.Request().Context())
 
 		payload := map[string]interface{}{
 			"message": "OK",

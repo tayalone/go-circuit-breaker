@@ -7,6 +7,7 @@ require (
 	github.com/tayalone/go-ess-package v0.0.4
 	github.com/uptrace/opentelemetry-go-extra/otelzap v0.1.17
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.36.4
+	go.opentelemetry.io/otel v1.11.1
 	go.uber.org/zap v1.24.0
 )
 
@@ -20,7 +21,6 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.17 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.11.1 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.11.1 // indirect
 	go.opentelemetry.io/otel/sdk v1.11.1 // indirect
 	go.opentelemetry.io/otel/trace v1.11.1 // indirect

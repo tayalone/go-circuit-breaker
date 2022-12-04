@@ -1,8 +1,11 @@
 package puched
 
 import (
+	"context"
 	"sync"
 	"time"
+
+	"go.opentelemetry.io/otel"
 )
 
 // State is a type that represents a state of CircuitBreaker.
@@ -41,9 +44,13 @@ func New() *Handler {
 }
 
 // Hit ...
-func (p *Handler) Hit() (int, State) {
+func (p *Handler) Hit(ctx context.Context) (int, State) {
+	tr := otel.Tracer("puched")
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	_, span := tr.Start(ctx, "Hit")
+	defer span.End()
+
 	now := time.Now()
 	p.Counter++
 	switch p.EmoState {
