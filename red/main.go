@@ -20,6 +20,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const logPath = "./logs/go.log"
+
 func main() {
 	// // ------ Setup Otel with Jeager  -------------------------------------------
 	tp, err := ess.JaegertracerProvider(os.Getenv("JEAGER_ENDPOINT"), os.Getenv("SERVICE_NAME"), os.Getenv("ENVIROMENT"))
@@ -35,7 +37,13 @@ func main() {
 	}(otelCtx)
 	// // ---------------------------------------------------------
 	// // --------- set up zapp --------------------------------
-	logger, _ := zap.NewProduction(zap.AddStacktrace(zap.ErrorLevel))
+	os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE, 0o666)
+
+	// logger, _ := zap.NewProduction(zap.AddStacktrace(zap.ErrorLevel))
+	c := zap.NewProductionConfig()
+	c.OutputPaths = []string{"stdout", logPath}
+	logger, _ := c.Build(zap.AddStacktrace(zap.ErrorLevel))
+
 	defer logger.Sync() // flushes buffer, if any
 
 	otelLogger := otelzap.New(logger, otelzap.WithMinLevel(zap.DebugLevel), otelzap.WithTraceIDField(true))
@@ -56,6 +64,7 @@ func main() {
 	// // -------------------------------------------------
 
 	r.GET("/ping", func(c *gin.Context) {
+		otelSugar.Ctx(c.Request.Context()).Infow("Green Still Ok")
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
