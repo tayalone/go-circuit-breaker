@@ -9,7 +9,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/chenjiandongx/ginprom"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sony/gobreaker"
 	ess "github.com/tayalone/go-ess-package/otel"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
@@ -45,10 +47,23 @@ func main() {
 	r := gin.Default()
 
 	r.Use(otelgin.Middleware(os.Getenv("SERVICE_NAME")))
+	// // -------- prmetheus -------------------------------
+	// p := ginprometheus.NewPrometheus("gin")
+	// p.Use(r)
+
+	r.Use(ginprom.PromMiddleware(nil))
+	r.GET("/metrics", ginprom.PromHandler(promhttp.Handler()))
+	// // -------------------------------------------------
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
+		})
+	})
+
+	r.GET("/status", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "ok",
 		})
 	})
 

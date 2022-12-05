@@ -12,6 +12,30 @@ services:
       - "14268:14268"
     networks:
       - cb
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - cb
+    ports:
+      - 9090:9090
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    depends_on:
+      - prometheus
+    networks:
+      - cb
   red:
     image: cosmtrek/air
     working_dir: /project
@@ -26,6 +50,8 @@ services:
       - ENVIROMENT=develop
     depends_on:
       - jaeger
+      - prometheus
+      - grafana
     networks:
       - cb
   green:
@@ -48,3 +74,5 @@ services:
 networks:
   cb:
     driver: bridge
+volumes:
+  prometheus_data: {}
