@@ -26,6 +26,7 @@ services:
       - cb
     ports:
       - 9090:9090
+
   grafana:
     image: grafana/grafana-oss:latest
     ports:
@@ -34,6 +35,52 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     depends_on:
       - prometheus
+    networks:
+      - cb
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    volumes:
+      - ./resources/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:9200/_cat/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    ports:
+      - 9200:9200
+    networks:
+      - cb
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.2
+    volumes:
+      - ./resources/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - cb
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.5.1
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./resources/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./red/logs/:/logs/
+    networks:
+      - cb
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.2
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/api/status"]
+      interval: 3s
+      timeout: 3s
+      retries: 50
+    ports:
+      - 5601:5601
     networks:
       - cb
   red:
